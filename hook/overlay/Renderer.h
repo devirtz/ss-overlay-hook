@@ -7,6 +7,7 @@
 #include <dxgi1_2.h>
 #include <thread>
 #include <atomic>
+#include <chrono>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")

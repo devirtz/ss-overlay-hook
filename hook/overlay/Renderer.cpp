@@ -109,8 +109,14 @@ HRESULT __stdcall Renderer::hookedPresent(IDXGISwapChain* sc, UINT syncInterval,
 
 void Renderer::renderLoop()
 {
+    using namespace std::chrono;
+    constexpr int kTargetFPS = 165;
+    constexpr auto kFrameTime = duration_cast<nanoseconds>(duration<double>(1.0 / kTargetFPS));
+
     while (m_renderRunning)
     {
+        const auto frameStart = high_resolution_clock::now();
+
         const LONG_PTR overlayObj = GetWindowLongPtrW(window.hwnd(), GWLP_USERDATA);
         IDXGISwapChain* liveSc = overlayObj
             ? *reinterpret_cast<IDXGISwapChain**>(overlayObj + State::kSwapChainOffset)
@@ -118,6 +124,11 @@ void Renderer::renderLoop()
 
         if (!liveSc) { Sleep(1); continue; }
         liveSc->Present(0, 0);
+
+        const auto elapsed = high_resolution_clock::now() - frameStart;
+        const auto remaining = kFrameTime - elapsed;
+        if (remaining > nanoseconds(0))
+            std::this_thread::sleep_for(remaining);
     }
 }
 
